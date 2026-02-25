@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crecimiento Fetal — Semana a Semana</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0a14;
+  --panel: #13101e;
+  --border: #2a1f3d;
+  --accent: #c084fc;
+  --accent2: #f9a8d4;
+  --text: #e9d5ff;
+  --muted: #7c3aed55;
+  --glow: rgba(192,132,252,0.25);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 16px 50px;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(124,58,237,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(249,168,212,0.07) 0%, transparent 50%);
+}
+
+header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: #f3e8ff;
+}
+
+.author {
+  margin-top: 6px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  font-weight: 300;
+  color: #d8b4fe;
+  letter-spacing: 0.08em;
+}
+
+header p {
+  margin-top: 8px;
+  color: #a855f7;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.main-layout {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+  max-width: 1000px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── STAGE ── */
+.stage {
+  flex: 0 0 380px;
+  height: 420px;
+  background: var(--panel);
+    
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Ruler on right */
+.ruler {
+  position: absolute;
+  right: 14px;
+  top: 20px;
+  bottom: 20px;
+  width: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ruler-line {
+  flex: 1;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent2));
+  border-radius: 1px;
+  opacity: 0.3;
+  position: relative;
+}
+
+.ruler-label {
+  font-size: 0.55rem;
+  color: #a855f7;
+  letter-spacing: 0.05em;
+  writing-mode: vertical-rl;
+  margin-top: 4px;
+  opacity: 0.6;
+}
+
+/* Womb circle background */
+.womb {
+  width: 300px;
+  height: 320px;
+  border-radius: 50% 50% 50% 50% / 55% 55% 45% 45%;
+  background: radial-gradient(ellipse at 40% 35%, #1a0f2e, #0d0a14);
+  border: 1px solid rgba(192,132,252,0.15);
+  box-shadow: inset 0 0 60px rgba(124,58,237,0.1), 0 0 40px rgba(192,132,252,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* SVG figure inside womb */
+#fetalCanvas {
+  position: absolute;
+  transition: all 0.6s ease;
+}
+
+.size-indicator {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  background: rgba(13,10,20,0.8);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* ── INFO PANEL ── */
+.info-panel {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.week-display {
+  background: var(--panel);
+    
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+}
+
+.week-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 5rem;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 0 40px var(--glow);
+  transition: all 0.4s ease;
+}
+
+.week-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #a855f7;
+  margin-top: 4px;
+}
+
+.stage-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--accent2);
+  margin-top: 8px;
+  min-height: 1.4em;
+  transition: all 0.4s ease;
+}
+
+.size-text {
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: #a855f7;
+  letter-spacing: 0.05em;
+}
+
+.description-box {
+  background: var(--panel);
+    
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--text);
+  min-height: 100px;
+  transition: all 0.4s ease;
+}
+
+.comparison {
+  flex-direction: column;
+  text-align: center;
+  background: var(--panel);
+    
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.comparison-emoji {
+  font-size: 5rem;
+  transition: all 0.4s ease;
+}
+
+.comparison-text {
+  font-size: 0.9rem;
+  color: #a855f7;
+  line-height: 1.6;
+}
+
+.comparison-text strong {
+  color: var(--accent2);
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+/* ── TIMELINE ── */
+.timeline-wrap {
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 24px;
+}
+
+.timeline-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #a855f7;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.timeline {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed var(--panel);
+}
+
+.week-dot {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.week-dot:hover { transform: translateY(-3px); }
+
+.dot-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #2a1f3d;
+  border: 1px solid #3b1f6a;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.week-dot.active .dot-circle,
+.week-dot:hover .dot-circle {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--glow);
+}
+
+.week-dot.passed .dot-circle {
+  background: #4c1d95;
+}
+
+.dot-num {
+  font-size: 0.5rem;
+  color: #a855f7;
+  transition: color 0.3s;
+}
+
+.week-dot.active .dot-num { color: var(--accent); }
+
+.trimester-labels {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.tri-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a855f7;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(109,40,217,0.1);
+  border: 1px solid rgba(109,40,217,0.2);
+}
+
+/* ── CONTROLS ── */
+.controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 24px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.25s;
+}
+
+.btn:hover { background: rgba(192,132,252,0.1); border-color: var(--accent); color: var(--accent); }
+.btn.playing { background: rgba(192,132,252,0.12); border-color: var(--accent); color: var(--accent); }
+
+.speed-label {
+  font-size: 0.6rem;
+  color: #a855f7;
+  letter-spacing: 0.1em;
+  align-self: center;
+}
+
+/* Progress bar */
+.progress-bar {
+  width: 100%;
+  max-width: 1000px;
+  height: 3px;
+  background: #2a1f3d;
+  border-radius: 2px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--accent), var(--accent2));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>De Célula a Bebé</h1>
+  <p class="author">por José Antonio de Paz</p>
+  <p>Desarrollo embrionario y fetal · 40 semanas</p>
+</header>
+
+<div class="main-layout">
+
+  <!-- Stage / Visualization -->
+  <div class="stage">
+    <div class="womb">
+      <svg id="fetalCanvas" width="260" height="280" viewBox="0 0 260 280"></svg>
+    </div>
+    <div class="size-indicator" id="sizeIndicator">— mm</div>
+  </div>
+
+  <!-- Info -->
+  <div class="info-panel">
+    <div class="week-display">
+      <div class="week-num" id="weekNum">1</div>
+      <div class="week-label">Semana de gestación</div>
+      <div class="stage-name" id="stageName">Pre-embrión</div>
+      <div class="size-text" id="sizeText">Tamaño microscópico</div>
+    </div>
+    <div class="description-box" id="descBox">
+      Óvulo recién fecundado. La célula cigoto comienza sus primeras divisiones celulares mientras viaja hacia el útero. Es invisible a simple vista.
+    </div>
+    <div class="comparison">
+      <div class="comparison-emoji" id="compEmoji">🔬</div>
+      <div class="comparison-text">
+        <strong id="compName">Punta de alfiler</strong>
+        <span id="compDesc">Tamaño comparable</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-fill" id="progressFill" style="width:2.5%"></div>
+</div>
+
+<!-- Timeline -->
+<div class="timeline-wrap">
+  <div class="timeline-label">Línea de tiempo — haz clic en cualquier semana</div>
+  <div class="timeline" id="timeline"></div>
+  <div class="trimester-labels" style="justify-content:flex-start; padding: 0 2px;">
+    <span class="tri-label" style="margin-left:0px">1.er Trimestre (1–12)</span>
+    <span class="tri-label" style="margin-left:130px">2.º Trimestre (13–26)</span>
+    <span class="tri-label" style="margin-left:150px">3.er Trimestre (27–40)</span>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn" id="btnPrev" onclick="goWeek(currentWeek-1)">◀ Anterior</button>
+  <button class="btn" id="btnPlay" onclick="togglePlay()">▶ Reproducir</button>
+  <button class="btn" id="btnNext" onclick="goWeek(currentWeek+1)">Siguiente ▶</button>
+  <button class="btn" id="btnReset" onclick="resetAnim()">↩ Reiniciar</button>
+  <span class="speed-label">Velocidad:</span>
+  <button class="btn" onclick="setSpeed(1500)">Lenta</button>
+  <button class="btn" onclick="setSpeed(800)">Normal</button>
+  <button class="btn" onclick="setSpeed(300)">Rápida</button>
+</div>
+
+<script>
+// ── DATA ──
+const weeks = [
+  { w:1,  size:0.001, desc:"Cigoto. El óvulo recién fecundado comienza su primera división celular. Invisible a simple vista, aún fuera del útero.", stage:"Cigoto", comp:"🔬", compName:"Grano de polvo", compDesc:"< 0,1 mm" },
+  { w:2,  size:0.001, desc:"El óvulo fecundado se divide formando la mórula (16 células). Viaja por la trompa de Falopio hacia el útero.", stage:"Mórula", comp:"🔬", compName:"Punta de alfiler", compDesc:"< 0,1 mm" },
+  { w:3,  size:0.002, desc:"Se forma el blastocisto, una pequeña esfera hueca que se implanta en la pared uterina al final de esta semana.", stage:"Blastocisto", comp:"🌾", compName:"Semilla de amapola", compDesc:"≈ 0,2 mm" },
+  { w:4,  size:0.2,   desc:"El embrión tiene ≈2 mm. Se forman las tres capas germinales. Aparece el pliegue neural. El corazón primitivo empieza a latir.", stage:"Embrión temprano", comp:"🫐", compName:"Semilla de arándano", compDesc:"2 mm" },
+  { w:5,  size:0.25,  desc:"El tubo neural se cierra. Aparecen los rudimentos del corazón, los ojos y los oídos. El embrión tiene forma de C.", stage:"Embrión", comp:"🌿", compName:"Brote de lenteja", compDesc:"2–3 mm" },
+  { w:6,  size:0.5,   desc:"Se forman las yemas de los brazos y piernas. El corazón late ~100–160 veces/min. El cerebro se divide en sus 5 vesículas.", stage:"Embrión", comp:"🫐", compName:"Arándano", compDesc:"≈ 5 mm" },
+  { w:7,  size:1.2,   desc:"Aparecen los dedos de manos y pies unidos por membrana. La cara toma forma: nariz, labios y párpados primitivos.", stage:"Embrión", comp:"🫒", compName:"Aceituna", compDesc:"7–17 mm" },
+  { w:8,  size:2.1,   desc:"Ya se distinguen claramente los dedos. Se forman los genitales externos. El embrión hace movimientos espontáneos.", stage:"Embrión", comp:"🍓", compName:"Fresa pequeña", compDesc:"18–25 mm" },
+  { w:9,  size:3.0,   desc:"Todos los órganos principales están formados. A partir de ahora se considera feto. Los músculos responden a estímulos.", stage:"Feto temprano", comp:"🍇", compName:"Uva grande", compDesc:"25–35 mm" },
+  { w:10, size:4.0,   desc:"El feto puede mover los brazos y tragar líquido amniótico. Se osifican los primeros huesos. Las uñas comienzan a crecer.", stage:"Feto", comp:"🍒", compName:"Cereza", compDesc:"35–45 mm" },
+  { w:11, size:5.0,   desc:"El feto abre y cierra los puños. El diafragma está presente. Los genitales se diferencian, aunque no son visibles por ultrasonido aún.", stage:"Feto", comp:"🥝", compName:"Kiwi pequeño", compDesc:"40–60 mm" },
+  { w:12, size:7.0,   desc:"Fin del primer trimestre. Los reflejos están activos. El feto puede chuparse el pulgar. Mide unos 7 cm de cabeza a nalgas.", stage:"Feto", comp:"🍋", compName:"Limón", compDesc:"60–80 mm" },
+  { w:13, size:7.5,   desc:"El feto produce su propia orina. Se forma la placenta definitiva. Las cuerdas vocales están presentes.", stage:"Feto (2.º trim.)", comp:"🍑", compName:"Melocotón pequeño", compDesc:"≈ 7,5 cm" },
+  { w:14, size:8.7,   desc:"Los órganos sexuales son visibles por ecografía. El feto hace movimientos de respiración con el líquido amniótico.", stage:"Feto", comp:"🍎", compName:"Manzana pequeña", compDesc:"8,7 cm" },
+  { w:15, size:10.1,  desc:"El feto puede percibir la luz. Se mueve activamente aunque la madre aún no lo siente. El vello fino (lanugo) cubre su cuerpo.", stage:"Feto", comp:"🍊", compName:"Naranja", compDesc:"10 cm" },
+  { w:16, size:11.6,  desc:"La madre puede empezar a sentir los primeros movimientos fetales. El corazón bombea 25 litros de sangre al día.", stage:"Feto", comp:"🥑", compName:"Aguacate", compDesc:"11,6 cm" },
+  { w:17, size:13.0,  desc:"Se forma la grasa parda bajo la piel. Los huesos se endurecen. Las huellas dactilares son únicas e irrepetibles.", stage:"Feto", comp:"🍐", compName:"Pera", compDesc:"13 cm" },
+  { w:18, size:14.2,  desc:"El feto oye sonidos del exterior. Se puede conocer el sexo por ecografía. Los movimientos son más coordinados.", stage:"Feto", comp:"🥕", compName:"Zanahoria grande", compDesc:"14,2 cm" },
+  { w:19, size:15.3,  desc:"Se produce el vérnix caseoso, capa protectora de la piel. El cerebro desarrolla áreas para los sentidos.", stage:"Feto", comp:"🥭", compName:"Mango pequeño", compDesc:"15,3 cm" },
+  { w:20, size:16.4,  desc:"Mitad del embarazo. El feto tiene cejas y pestañas. Pesa unos 300 g. La ecografía morfológica revela su anatomía en detalle.", stage:"Feto", comp:"🫑", compName:"Pimiento", compDesc:"16,4 cm" },
+  { w:21, size:26.7,  desc:"El feto traga líquido amniótico y lo procesa. El sistema digestivo practica sus funciones. Pesa ~400 g.", stage:"Feto (cabeza–talón)", comp:"🥕", compName:"Zanahoria grande", compDesc:"26,7 cm" },
+  { w:22, size:27.8,  desc:"Los labios y cejas están bien definidos. El feto duerme y se despierta en ciclos regulares. El sentido del tacto se desarrolla.", stage:"Feto", comp:"🌽", compName:"Mazorca de maíz", compDesc:"27,8 cm" },
+  { w:23, size:28.9,  desc:"El oído interno está maduro. El feto reacciona a música y voces. Los pulmones producen surfactante por primera vez.", stage:"Feto", comp:"🥭", compName:"Mango maduro", compDesc:"28,9 cm" },
+  { w:24, size:30.0,  desc:"Límite de viabilidad. Con cuidados intensivos, un bebé nacido ahora tiene posibilidades de sobrevivir. Pesa ~600 g.", stage:"Feto viable", comp:"🌽", compName:"Mazorca grande", compDesc:"30 cm" },
+  { w:25, size:34.6,  desc:"La piel se vuelve más opaca a medida que se deposita grasa. El feto tiene reflejo de succión ya bien desarrollado.", stage:"Feto", comp:"🥒", compName:"Pepino", compDesc:"34,6 cm" },
+  { w:26, size:35.6,  desc:"Los ojos se abren por primera vez. El feto parpadea y responde a la luz. El cerebro crece rápidamente.", stage:"Feto", comp:"🫛", compName:"Vaina de guisante grande", compDesc:"35,6 cm" },
+  { w:27, size:36.6,  desc:"Inicio del tercer trimestre. El feto tiene un ciclo sueño-vigilia regular. Pesa ~900 g. Puede reconocer la voz materna.", stage:"Feto (3.er trim.)", comp:"🥬", compName:"Lechuga romana", compDesc:"36,6 cm" },
+  { w:28, size:37.6,  desc:"Los pulmones están casi maduros. El feto tiene hipo frecuentemente. La médula ósea produce glóbulos rojos.", stage:"Feto", comp:"🥦", compName:"Brócoli grande", compDesc:"37,6 cm" },
+  { w:29, size:38.6,  desc:"El esqueleto se endurece. El feto acumula grasa bajo la piel. Los movimientos son más fuertes y la madre los siente claramente.", stage:"Feto", comp:"🫑", compName:"Pimiento grande", compDesc:"38,6 cm" },
+  { w:30, size:39.9,  desc:"El feto puede percibir sabores del líquido amniótico. Pesa ~1,3 kg. La cabeza se orienta hacia abajo preparándose.", stage:"Feto", comp:"🥦", compName:"Coliflor", compDesc:"39,9 cm" },
+  { w:31, size:41.1,  desc:"Los pulmones y el sistema digestivo están casi completamente desarrollados. El feto procesa la información del entorno.", stage:"Feto", comp:"🥥", compName:"Coco", compDesc:"41,1 cm" },
+  { w:32, size:42.4,  desc:"El lanugo desaparece. La piel se suaviza. El feto pesa ~1,7 kg. Puede seguir una luz con sus ojos.", stage:"Feto", comp:"🍍", compName:"Piña pequeña", compDesc:"42,4 cm" },
+  { w:33, size:43.7,  desc:"El cerebro crece un 26% esta semana. Los huesos están completamente formados aunque aún blandos. Pesa ~2 kg.", stage:"Feto", comp:"🍍", compName:"Piña mediana", compDesc:"43,7 cm" },
+  { w:34, size:45.0,  desc:"Los pulmones están maduros. El feto nacido ahora sobreviviría sin grandes complicaciones. Pesa ~2,1 kg.", stage:"Feto maduro", comp:"🥐", compName:"Baguette pequeña", compDesc:"45 cm" },
+  { w:35, size:46.2,  desc:"El feto ocupa casi todo el espacio uterino. Sus movimientos se sienten con gran intensidad. Pesa ~2,4 kg.", stage:"Feto", comp:"🍈", compName:"Melón pequeño", compDesc:"46,2 cm" },
+  { w:36, size:47.4,  desc:"El vérnix caseoso se absorbe. El feto desciende hacia la pelvis. Pesa ~2,6 kg. Las mejillas se redondean.", stage:"Feto", comp:"🍈", compName:"Melón", compDesc:"47,4 cm" },
+  { w:37, size:48.6,  desc:"Embarazo a término temprano. El feto está completamente maduro. Pesa ~2,9 kg. La cabeza encaja en la pelvis.", stage:"Término temprano", comp:"🎃", compName:"Calabaza pequeña", compDesc:"48,6 cm" },
+  { w:38, size:49.8,  desc:"El feto está completamente listo. Acumula 14 g de grasa al día. Pesa ~3,1 kg. Los órganos funcionan perfectamente.", stage:"Término", comp:"🎃", compName:"Calabaza mediana", compDesc:"49,8 cm" },
+  { w:39, size:50.7,  desc:"El feto pesa ~3,3 kg. La placenta envejece. Puede llegar el momento del parto en cualquier momento.", stage:"Término", comp:"🎃", compName:"Calabaza grande", compDesc:"50,7 cm" },
+  { w:40, size:51.2,  desc:"¡Término completo! El bebé está listo para nacer. Pesa ~3,4 kg y mide ~51 cm. Nueve meses de un viaje extraordinario.", stage:"¡Nacimiento!", comp:"👶", compName:"Bebé recién nacido", compDesc:"≈ 51 cm · ≈ 3,4 kg" },
+];
+
+let currentWeek = 0;
+let playing = false;
+let interval = null;
+let speed = 800;
+
+// Build timeline
+const timeline = document.getElementById('timeline');
+weeks.forEach((d,i) => {
+  const dot = document.createElement('div');
+  dot.className = 'week-dot';
+  dot.id = `dot-${i}`;
+  dot.innerHTML = `<div class="dot-circle"></div><div class="dot-num">${d.w}</div>`;
+  dot.onclick = () => goWeek(i);
+  timeline.appendChild(dot);
+});
+
+// SVG drawing function
+function drawFetus(svg, weekIndex) {
+  const d = weeks[weekIndex];
+  const w = weekIndex; // 0–39
+  svg.innerHTML = '';
+
+  const cx = 130, cy = 145;
+
+  // Normalize size for display: logarithmic scale
+  const minLog = Math.log(0.001);
+  const maxLog = Math.log(51.2);
+  const t = (Math.log(Math.max(d.size, 0.001)) - minLog) / (maxLog - minLog);
+  const maxR = 110;
+  const r = 4 + t * (maxR - 4);
+
+  // Color shifts from purple → pink → warm
+  const progress = w / 39;
+  const h1 = Math.round(280 - progress * 60); // hue
+  const s = 70 + progress * 20;
+  const l = 45 + progress * 15;
+  const color = `hsl(${h1}, ${s}%, ${l}%)`;
+  const colorLight = `hsl(${h1}, ${s}%, ${l + 20}%)`;
+  const colorDark = `hsl(${h1}, ${s}%, ${l - 20}%)`;
+
+  const ns = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+    return e;
+  }
+
+  // Glow
+  const defs = el('defs', {});
+  const gFilter = el('filter', {id:'glow'});
+  const feGlow = el('feGaussianBlur', {stdDeviation:'8', result:'blur'});
+  const feMerge = el('feMerge', {});
+  const feMN1 = el('feMergeNode', {in:'blur'});
+  const feMN2 = el('feMergeNode', {in:'SourceGraphic'});
+  feMerge.appendChild(feMN1); feMerge.appendChild(feMN2);
+  gFilter.appendChild(feGlow); gFilter.appendChild(feMerge);
+  defs.appendChild(gFilter);
+  svg.appendChild(defs);
+
+  if (w < 3) {
+    // Weeks 1–3: cell cluster
+    const numCells = [1, 4, 16][w];
+    const baseR = Math.max(3, r * 0.3);
+    if (numCells === 1) {
+      const c = el('circle', {cx, cy, r: baseR * 2, fill: color, opacity:0.9, filter:'url(#glow)'});
+      svg.appendChild(c);
+      // Nucleus
+      const n = el('circle', {cx, cy, r: baseR * 0.8, fill: colorLight, opacity:0.7});
+      svg.appendChild(n);
+    } else {
+      const spread = baseR * 1.5;
+      const positions = numCells === 4
+        ? [[-1,-1],[1,-1],[-1,1],[1,1]]
+        : [[-2,-2],[-1,-2],[0,-2],[1,-2],[2,-2],[-2,-1],[-1,0],[0,0],[1,0],[2,1],[-2,1],[-1,2],[0,2],[1,2],[2,2],[0,-1]];
+      positions.slice(0, numCells).forEach(([dx,dy]) => {
+        const cr = baseR * (0.8 + Math.random()*0.4);
+        const c = el('circle', {
+          cx: cx + dx * spread * 0.5,
+          cy: cy + dy * spread * 0.5,
+          r: cr, fill: color, opacity: 0.8, filter:'url(#glow)'
+        });
+        svg.appendChild(c);
+      });
+    }
+
+  } else if (w < 6) {
+    // Weeks 4–6: disc/C-shape embryo very small
+    const sc = r / 30;
+    const g = el('g', {transform: `translate(${cx},${cy}) scale(${sc})`});
+    // Simple oval embryo
+    const body = el('ellipse', {cx:0, cy:0, rx:20, ry:30, fill:color, opacity:0.9, filter:'url(#glow)'});
+    g.appendChild(body);
+    // Head bud
+    const head = el('circle', {cx:0, cy:-28, r:12, fill:colorLight, opacity:0.85});
+    g.appendChild(head);
+    svg.appendChild(g);
+
+  } else if (w < 9) {
+    // Weeks 7–9: C-shape embryo with limb buds
+    const sc = r / 50;
+    const g = el('g', {transform:`translate(${cx},${cy+10}) scale(${sc})`});
+    // Body C-curve
+    const bodyPath = `M 0 -40 C 30 -40 45 0 35 40 C 30 55 10 60 0 60`;
+    const body = el('path', {d:bodyPath, stroke:color, 'stroke-width':18, fill:'none', 'stroke-linecap':'round', opacity:0.9, filter:'url(#glow)'});
+    g.appendChild(body);
+    // Head
+    const head = el('circle', {cx:0, cy:-50, r:22, fill:colorLight, opacity:0.9});
+    g.appendChild(head);
+    // Arm buds
+    if (w >= 7) {
+      const arm1 = el('circle', {cx:32, cy:-10, r:8, fill:colorDark, opacity:0.7});
+      g.appendChild(arm1);
+    }
+    // Leg buds
+    if (w >= 8) {
+      const leg1 = el('circle', {cx:28, cy:35, r:9, fill:colorDark, opacity:0.7});
+      g.appendChild(leg1);
+    }
+    svg.appendChild(g);
+
+  } else if (w < 13) {
+    // Weeks 10–12: more human shape, curled
+    const sc = r / 75;
+    const g = el('g', {transform:`translate(${cx},${cy+15}) scale(${sc})`});
+    // Body
+    const bodyPath = `M 0 -50 C 25 -45 40 -5 35 40 C 32 65 15 75 0 75`;
+    const body = el('path', {d:bodyPath, stroke:color, 'stroke-width':22, fill:'none', 'stroke-linecap':'round', opacity:0.9, filter:'url(#glow)'});
+    g.appendChild(body);
+    // Head (bigger proportionally)
+    const head = el('circle', {cx:0, cy:-68, r:28, fill:colorLight, opacity:0.9});
+    g.appendChild(head);
+    // Arms
+    const arm = el('path', {d:`M 30 -20 Q 55 -5 50 15`, stroke:colorDark, 'stroke-width':10, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(arm);
+    // Legs
+    const leg1 = el('path', {d:`M 25 55 Q 40 75 30 90`, stroke:colorDark, 'stroke-width':10, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(leg1);
+    const leg2 = el('path', {d:`M 10 70 Q 5 90 -5 100`, stroke:colorDark, 'stroke-width':10, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(leg2);
+    svg.appendChild(g);
+
+  } else if (w < 21) {
+    // Weeks 13–20: fetal position, more defined
+    const sc = r / 110;
+    const g = el('g', {transform:`translate(${cx},${cy+10}) scale(${sc})`});
+    // Body oval
+    const body = el('ellipse', {cx:10, cy:20, rx:30, ry:50, fill:color, opacity:0.85, filter:'url(#glow)'});
+    g.appendChild(body);
+    // Head
+    const headR = 25 + (w - 12) * 0.5;
+    const head = el('circle', {cx:0, cy:-55, r:headR, fill:colorLight, opacity:0.9});
+    g.appendChild(head);
+    // Arms curled
+    const arm = el('path', {d:`M 30 -10 Q 60 10 50 40`, stroke:color, 'stroke-width':12, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(arm);
+    const arm2 = el('path', {d:`M -15 -5 Q -45 15 -40 45`, stroke:color, 'stroke-width':12, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(arm2);
+    // Legs curled
+    const leg1 = el('path', {d:`M 25 65 Q 65 80 60 110`, stroke:color, 'stroke-width':12, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(leg1);
+    const leg2 = el('path', {d:`M -5 68 Q -30 90 -25 115`, stroke:color, 'stroke-width':12, fill:'none', 'stroke-linecap':'round', opacity:0.8});
+    g.appendChild(leg2);
+    svg.appendChild(g);
+
+  } else {
+    // Weeks 21–40: developed fetus / baby
+    const sc = r / 130;
+    const g = el('g', {transform:`translate(${cx},${cy+5}) scale(${sc})`});
+    // Body
+    const body = el('ellipse', {cx:0, cy:30, rx:35, ry:60, fill:color, opacity:0.85, filter:'url(#glow)'});
+    g.appendChild(body);
+    // Head
+    const headSize = 32 + Math.min((w-20)*0.4, 12);
+    const head = el('circle', {cx:0, cy:-55, r:headSize, fill:colorLight, opacity:0.9});
+    g.appendChild(head);
+    // Face features (from week 30+)
+    if (w >= 30) {
+      const eye1 = el('circle', {cx:-10, cy:-58, r:3, fill:colorDark, opacity:0.6});
+      const eye2 = el('circle', {cx:10, cy:-58, r:3, fill:colorDark, opacity:0.6});
+      const mouth = el('path', {d:`M -7 -46 Q 0 -40 7 -46`, stroke:colorDark, 'stroke-width':2, fill:'none', opacity:0.5});
+      g.appendChild(eye1); g.appendChild(eye2); g.appendChild(mouth);
+    }
+    // Arms
+    const armAngle = w > 30 ? 0.4 : 0.2;
+    const arm = el('path', {d:`M 33 0 Q 65 ${20+w} 55 ${50+w*0.5}`, stroke:colorDark, 'stroke-width':13, fill:'none', 'stroke-linecap':'round', opacity:0.85});
+    g.appendChild(arm);
+    const arm2 = el('path', {d:`M -33 0 Q -65 ${20+w} -55 ${50+w*0.5}`, stroke:colorDark, 'stroke-width':13, fill:'none', 'stroke-linecap':'round', opacity:0.85});
+    g.appendChild(arm2);
+    // Legs (more extended in late pregnancy)
+    const legExt = Math.min((w - 20) * 2, 40);
+    const leg1 = el('path', {d:`M 22 85 Q 45 ${110+legExt} 40 ${135+legExt}`, stroke:colorDark, 'stroke-width':15, fill:'none', 'stroke-linecap':'round', opacity:0.85});
+    g.appendChild(leg1);
+    const leg2 = el('path', {d:`M -22 85 Q -45 ${110+legExt} -40 ${135+legExt}`, stroke:colorDark, 'stroke-width':15, fill:'none', 'stroke-linecap':'round', opacity:0.85});
+    g.appendChild(leg2);
+    svg.appendChild(g);
+  }
+
+  // Pulse animation
+  const pulse = el('circle', {cx, cy, r: r * 1.1, fill:'none', stroke:color, 'stroke-width':1, opacity:0.3});
+  svg.appendChild(pulse);
+  pulse.innerHTML = `<animate attributeName="r" values="${r*1.0};${r*1.3};${r*1.0}" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>`;
+}
+
+function goWeek(i) {
+  if (i < 0 || i > 39) return;
+  currentWeek = i;
+  const d = weeks[i];
+
+  // Update SVG
+  const svg = document.getElementById('fetalCanvas');
+  drawFetus(svg, i);
+
+  // Update text
+  document.getElementById('weekNum').textContent = d.w;
+  document.getElementById('stageName').textContent = d.stage;
+  const sizeStr = d.size < 0.01 ? '< 0,1 mm' : d.size < 1 ? `${(d.size*10).toFixed(1)} mm` : `${d.size} cm`;
+  document.getElementById('sizeText').textContent = sizeStr;
+  document.getElementById('sizeIndicator').textContent = sizeStr;
+  document.getElementById('descBox').textContent = d.desc;
+  document.getElementById('compEmoji').textContent = d.comp;
+  document.getElementById('compName').textContent = d.compName;
+  document.getElementById('compDesc').textContent = d.compDesc;
+
+  // Progress
+  document.getElementById('progressFill').style.width = `${((i+1)/40*100).toFixed(1)}%`;
+
+  // Timeline dots
+  document.querySelectorAll('.week-dot').forEach((dot,j) => {
+    dot.classList.remove('active','passed');
+    if (j === i) dot.classList.add('active');
+    else if (j < i) dot.classList.add('passed');
+  });
+
+  // Scroll timeline to keep active dot visible
+  const activeDot = document.getElementById(`dot-${i}`);
+  if (activeDot) activeDot.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+}
+
+function togglePlay() {
+  playing = !playing;
+  const btn = document.getElementById('btnPlay');
+  if (playing) {
+    btn.textContent = '⏸ Pausar';
+    btn.classList.add('playing');
+    interval = setInterval(() => {
+      if (currentWeek >= 39) {
+        playing = false;
+        btn.textContent = '▶ Reproducir';
+        btn.classList.remove('playing');
+        clearInterval(interval);
+        return;
+      }
+      goWeek(currentWeek + 1);
+    }, speed);
+  } else {
+    btn.textContent = '▶ Reproducir';
+    btn.classList.remove('playing');
+    clearInterval(interval);
+  }
+}
+
+function setSpeed(s) {
+  speed = s;
+  if (playing) {
+    clearInterval(interval);
+    interval = setInterval(() => {
+      if (currentWeek >= 39) { togglePlay(); return; }
+      goWeek(currentWeek + 1);
+    }, speed);
+  }
+}
+
+function resetAnim() {
+  if (playing) togglePlay();
+  goWeek(0);
+}
+
+// Init
+goWeek(0);
+</script>
+</body>
+</html>
