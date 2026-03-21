@@ -181,6 +181,28 @@
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 13px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        /* Campos de asimetría calculados automáticamente */
+        .variable-input input.auto-calculated {
+            background: #f0f4ff;
+            border-color: #667eea;
+            color: #3730a3;
+            font-weight: 700;
+            cursor: not-allowed;
+        }
+
+        .variable-input .auto-label {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #667eea;
+            background: #e0e7ff;
+            padding: 1px 6px;
+            border-radius: 10px;
+            vertical-align: middle;
         }
 
         .results-grid {
@@ -243,8 +265,6 @@
         .q2 { color: #f97316; background: #ffedd5; }
         .q3 { color: #10b981; background: #d1fae5; }
         .q4 { color: #3b82f6; background: #dbeafe; }
-        .below { color: #7c3aed; background: #ede9fe; }
-        .above { color: #db2777; background: #fce7f3; }
 
         .quartile-badge {
             display: inline-block;
@@ -299,39 +319,11 @@
             line-height: 1.5;
         }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-            max-height: 80px;
-            max-width: 150px;
-            object-fit: contain;
-        }
-
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .content {
-                padding: 20px;
-            }
-
-                max-height: 60px;
-                max-width: 120px;
-            }
+            .form-grid { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 22px; }
+            .content { padding: 20px; }
         }
     </style>
 </head>
@@ -339,7 +331,7 @@
     <div class="container">
         <div class="header">
             <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px;">
-                <img id="logoImg" src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/f9f80f2b-3d88-4bb6-b58d-f1c3e4c18bcd" alt="Logo Universidad de León - Sport Physiology" style="max-height: 80px; max-width: 180px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                <img id="logoImg" src="https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/f9f80f2b-3d88-4bb6-b58d-f1c3e4c18bcd" alt="Logo Universidad de León - Sport Physiology" style="max-height: 80px; max-width: 180px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); cursor: pointer;">
             </div>
             <h1>📊 Calculadora de Cuartiles de Fuerza Muscular</h1>
             <p>Esclerosis Múltiple - Clasificación según Sexo, Tipo de EM y Grado de Discapacidad (EDSS)</p>
@@ -347,10 +339,10 @@
         </div>
 
         <div class="content">
-            <!-- INPUTS SECTION -->
+
+            <!-- DATOS DEL PACIENTE -->
             <div class="section">
                 <h2><span></span>Datos del Paciente</h2>
-
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="gender">Sexo:</label>
@@ -360,7 +352,6 @@
                             <option value="Female">Mujer</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="msType">Tipo de Esclerosis Múltiple:</label>
                         <select id="msType">
@@ -370,7 +361,6 @@
                             <option value="SP">SP (Secundaria Progresiva)</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="edss">Grado de Discapacidad (EDSS):</label>
                         <select id="edss">
@@ -383,12 +373,12 @@
                 </div>
             </div>
 
-            <!-- VARIABLES INPUT SECTION -->
+            <!-- VALORES DE FUERZA -->
             <div class="section">
                 <h2><span></span>Valores de Fuerza Muscular (kgf)</h2>
 
                 <div class="info-box">
-                    💡 Introducir los valores medidos en kilogramos-fuerza (kgf). Para asimetrías, introducir el valor en porcentaje.
+                    💡 Introduce los valores de fuerza en kgf. Las asimetrías se calculan <strong>automáticamente</strong> a partir de los valores de miembro dominante y no dominante mediante la fórmula: <strong>Asimetría (%) = ((Dominante − No Dominante) / Dominante) × 100</strong>
                 </div>
 
                 <div class="variables-grid">
@@ -398,11 +388,11 @@
                     </div>
                     <div class="variable-input">
                         <label for="var1rm_right">1RM Miembro Dominante:</label>
-                        <input type="number" id="var1rm_right" placeholder="0.0" step="0.1">
+                        <input type="number" id="var1rm_right" placeholder="0.0" step="0.1" oninput="autoCalcAsymmetry()">
                     </div>
                     <div class="variable-input">
                         <label for="var1rm_left">1RM Miembro No-Dominante:</label>
-                        <input type="number" id="var1rm_left" placeholder="0.0" step="0.1">
+                        <input type="number" id="var1rm_left" placeholder="0.0" step="0.1" oninput="autoCalcAsymmetry()">
                     </div>
                     <div class="variable-input">
                         <label for="varmvic_bil">MVIC Bilateral:</label>
@@ -410,19 +400,27 @@
                     </div>
                     <div class="variable-input">
                         <label for="varmvic_right">MVIC Miembro Dominante:</label>
-                        <input type="number" id="varmvic_right" placeholder="0.0" step="0.1">
+                        <input type="number" id="varmvic_right" placeholder="0.0" step="0.1" oninput="autoCalcAsymmetry()">
                     </div>
                     <div class="variable-input">
                         <label for="varmvic_left">MVIC Miembro No-Dominante:</label>
-                        <input type="number" id="varmvic_left" placeholder="0.0" step="0.1">
+                        <input type="number" id="varmvic_left" placeholder="0.0" step="0.1" oninput="autoCalcAsymmetry()">
                     </div>
                     <div class="variable-input">
-                        <label for="var_asym_1rm">Asimetría 1RM (%):</label>
-                        <input type="number" id="var_asym_1rm" placeholder="0.0" step="0.1">
+                        <label for="var_asym_1rm">
+                            Asimetría 1RM (%):
+                            <span class="auto-label">AUTO</span>
+                        </label>
+                        <input type="number" id="var_asym_1rm" placeholder="—" step="0.1"
+                               class="auto-calculated" readonly title="Calculado automáticamente a partir de Dominante y No-Dominante">
                     </div>
                     <div class="variable-input">
-                        <label for="var_asym_mvic">Asimetría MVIC (%):</label>
-                        <input type="number" id="var_asym_mvic" placeholder="0.0" step="0.1">
+                        <label for="var_asym_mvic">
+                            Asimetría MVIC (%):
+                            <span class="auto-label">AUTO</span>
+                        </label>
+                        <input type="number" id="var_asym_mvic" placeholder="—" step="0.1"
+                               class="auto-calculated" readonly title="Calculado automáticamente a partir de Dominante y No-Dominante">
                     </div>
                 </div>
 
@@ -436,18 +434,15 @@
                 <div class="success-message" id="successMessage">✓ Cálculo realizado correctamente</div>
             </div>
 
-            <!-- RESULTS SECTION -->
+            <!-- RESULTADOS -->
             <div class="section" id="resultsSection" style="display:none;">
                 <h2><span></span>Resultados de Clasificación de Cuartiles</h2>
 
                 <div class="results-grid">
-                    <!-- Por Tipo de EM -->
                     <div class="result-card">
                         <h3>Por Tipo de EM</h3>
                         <div id="resultsByType"></div>
                     </div>
-
-                    <!-- Por Grado EDSS -->
                     <div class="result-card">
                         <h3>Por Grado de Discapacidad (EDSS)</h3>
                         <div id="resultsByEDSS"></div>
@@ -455,77 +450,103 @@
                 </div>
 
                 <div class="note-clinical">
-                    <strong>⚠️ Nota Clínica:</strong> Estos cuartiles se basan en tu población de estudio. Q1 indica el 25% más bajo de fuerza, Q4 el 25% más alto. Los valores de asimetría (%) reflejan diferencias entre miembros dominante y no-dominante.
+                    <strong>⚠️ Nota Clínica:</strong> Estos cuartiles se basan en la población de estudio de referencia. Q1 indica el 25% más bajo de fuerza, Q4 el 25% más alto. La asimetría (%) refleja la diferencia entre miembro dominante y no dominante respecto al dominante.
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // REFERENCE DATA FROM TABLES S3 AND S4
+        // ─── CÁLCULO AUTOMÁTICO DE ASIMETRÍAS ────────────────────────────────────
+        // Fórmula: Asimetría (%) = ((Dominante − No Dominante) / Dominante) × 100
+        function autoCalcAsymmetry() {
+            const rmD  = parseFloat(document.getElementById("var1rm_right").value);
+            const rmND = parseFloat(document.getElementById("var1rm_left").value);
+            const mvD  = parseFloat(document.getElementById("varmvic_right").value);
+            const mvND = parseFloat(document.getElementById("varmvic_left").value);
+
+            const asymField1RM  = document.getElementById("var_asym_1rm");
+            const asymFieldMVIC = document.getElementById("var_asym_mvic");
+
+            if (!isNaN(rmD) && rmD > 0 && !isNaN(rmND)) {
+                const asym1RM = ((rmD - rmND) / rmD) * 100;
+                asymField1RM.value = asym1RM.toFixed(1);
+            } else {
+                asymField1RM.value = "";
+            }
+
+            if (!isNaN(mvD) && mvD > 0 && !isNaN(mvND)) {
+                const asymMVIC = ((mvD - mvND) / mvD) * 100;
+                asymFieldMVIC.value = asymMVIC.toFixed(1);
+            } else {
+                asymFieldMVIC.value = "";
+            }
+        }
+
+        // ─── DATOS DE REFERENCIA ─────────────────────────────────────────────────
         const quartileDataMS = {
             "Male": {
                 "PP": {
-                    "1RM_Bil": [63.0, 87.5, 113.0],
-                    "1RM_Right": [31.0, 41.0, 52.0],
-                    "1RM_Left": [28.7, 47.5, 64.0],
-                    "MVIC_Bil": [75.4, 96.0, 114.0],
-                    "MVIC_Right": [41.0, 45.0, 51.4],
-                    "MVIC_Left": [37.3, 54.0, 61.0],
-                    "Asymmetry_1RM": [0.0, 16.0, 29.1],
-                    "Asymmetry_MVIC": [2.3, 24.2, 31.8]
+                    "1RM_Bil":        [63.0, 87.5, 113.0],
+                    "1RM_Right":      [31.0, 41.0,  52.0],
+                    "1RM_Left":       [28.7, 47.5,  64.0],
+                    "MVIC_Bil":       [75.4, 96.0, 114.0],
+                    "MVIC_Right":     [41.0, 45.0,  51.4],
+                    "MVIC_Left":      [37.3, 54.0,  61.0],
+                    "Asymmetry_1RM":  [ 0.0, 16.0,  29.1],
+                    "Asymmetry_MVIC": [ 2.3, 24.2,  31.8]
                 },
                 "RR": {
-                    "1RM_Bil": [83.2, 90.0, 114.0],
-                    "1RM_Right": [33.0, 48.0, 58.2],
-                    "1RM_Left": [35.2, 49.5, 60.2],
-                    "MVIC_Bil": [86.4, 100.5, 128.0],
-                    "MVIC_Right": [39.5, 46.7, 57.9],
-                    "MVIC_Left": [35.1, 49.1, 60.9],
-                    "Asymmetry_1RM": [0.0, 1.8, 17.9],
-                    "Asymmetry_MVIC": [7.1, 14.9, 25.0]
+                    "1RM_Bil":        [83.2, 90.0, 114.0],
+                    "1RM_Right":      [33.0, 48.0,  58.2],
+                    "1RM_Left":       [35.2, 49.5,  60.2],
+                    "MVIC_Bil":       [86.4,100.5, 128.0],
+                    "MVIC_Right":     [39.5, 46.7,  57.9],
+                    "MVIC_Left":      [35.1, 49.1,  60.9],
+                    "Asymmetry_1RM":  [ 0.0,  1.8,  17.9],
+                    "Asymmetry_MVIC": [ 7.1, 14.9,  25.0]
                 },
                 "SP": {
-                    "1RM_Bil": [53.5, 75.0, 97.5],
-                    "1RM_Right": [45.5, 50.0, 62.0],
-                    "1RM_Left": [46.0, 50.0, 62.0],
-                    "MVIC_Bil": [54.6, 82.0, 108.2],
-                    "MVIC_Right": [24.4, 37.3, 51.1],
-                    "MVIC_Left": [27.4, 39.3, 51.8],
-                    "Asymmetry_1RM": [0.0, 3.9, 9.1],
-                    "Asymmetry_MVIC": [11.8, 26.6, 38.5]
+                    "1RM_Bil":        [53.5, 75.0,  97.5],
+                    "1RM_Right":      [45.5, 50.0,  62.0],
+                    "1RM_Left":       [46.0, 50.0,  62.0],
+                    "MVIC_Bil":       [54.6, 82.0, 108.2],
+                    "MVIC_Right":     [24.4, 37.3,  51.1],
+                    "MVIC_Left":      [27.4, 39.3,  51.8],
+                    "Asymmetry_1RM":  [ 0.0,  3.9,   9.1],
+                    "Asymmetry_MVIC": [11.8, 26.6,  38.5]
                 }
             },
             "Female": {
                 "PP": {
-                    "1RM_Bil": [42.0, 55.0, 67.0],
-                    "1RM_Right": [16.0, 20.0, 27.0],
-                    "1RM_Left": [17.0, 29.0, 36.0],
-                    "MVIC_Bil": [46.0, 55.6, 65.1],
-                    "MVIC_Right": [18.6, 27.3, 32.2],
-                    "MVIC_Left": [21.7, 27.1, 30.5],
-                    "Asymmetry_1RM": [5.4, 22.9, 36.0],
-                    "Asymmetry_MVIC": [10.0, 22.8, 31.1]
+                    "1RM_Bil":        [42.0, 55.0,  67.0],
+                    "1RM_Right":      [16.0, 20.0,  27.0],
+                    "1RM_Left":       [17.0, 29.0,  36.0],
+                    "MVIC_Bil":       [46.0, 55.6,  65.1],
+                    "MVIC_Right":     [18.6, 27.3,  32.2],
+                    "MVIC_Left":      [21.7, 27.1,  30.5],
+                    "Asymmetry_1RM":  [ 5.4, 22.9,  36.0],
+                    "Asymmetry_MVIC": [10.0, 22.8,  31.1]
                 },
                 "RR": {
-                    "1RM_Bil": [47.3, 59.5, 75.0],
-                    "1RM_Right": [21.0, 28.0, 38.0],
-                    "1RM_Left": [22.0, 29.0, 38.0],
-                    "MVIC_Bil": [53.7, 66.1, 77.3],
-                    "MVIC_Right": [27.2, 31.9, 39.7],
-                    "MVIC_Left": [26.0, 31.5, 39.7],
-                    "Asymmetry_1RM": [0.0, 0.0, 10.8],
-                    "Asymmetry_MVIC": [4.9, 10.2, 20.9]
+                    "1RM_Bil":        [47.3, 59.5,  75.0],
+                    "1RM_Right":      [21.0, 28.0,  38.0],
+                    "1RM_Left":       [22.0, 29.0,  38.0],
+                    "MVIC_Bil":       [53.7, 66.1,  77.3],
+                    "MVIC_Right":     [27.2, 31.9,  39.7],
+                    "MVIC_Left":      [26.0, 31.5,  39.7],
+                    "Asymmetry_1RM":  [ 0.0,  0.0,  10.8],
+                    "Asymmetry_MVIC": [ 4.9, 10.2,  20.9]
                 },
                 "SP": {
-                    "1RM_Bil": [42.3, 47.0, 63.2],
-                    "1RM_Right": [22.0, 25.0, 26.0],
-                    "1RM_Left": [16.7, 20.0, 29.5],
-                    "MVIC_Bil": [40.0, 50.2, 64.7],
-                    "MVIC_Right": [20.0, 28.0, 33.0],
-                    "MVIC_Left": [17.8, 24.0, 31.1],
-                    "Asymmetry_1RM": [0.0, 8.3, 14.7],
-                    "Asymmetry_MVIC": [11.6, 26.2, 35.1]
+                    "1RM_Bil":        [42.3, 47.0,  63.2],
+                    "1RM_Right":      [22.0, 25.0,  26.0],
+                    "1RM_Left":       [16.7, 20.0,  29.5],
+                    "MVIC_Bil":       [40.0, 50.2,  64.7],
+                    "MVIC_Right":     [20.0, 28.0,  33.0],
+                    "MVIC_Left":      [17.8, 24.0,  31.1],
+                    "Asymmetry_1RM":  [ 0.0,  8.3,  14.7],
+                    "Asymmetry_MVIC": [11.6, 26.2,  35.1]
                 }
             }
         };
@@ -533,86 +554,115 @@
         const quartileDataEDSS = {
             "Male": {
                 "Mild": {
-                    "1RM_Bil": [85.0, 90.0, 115.5],
-                    "1RM_Right": [42.2, 52.5, 66.2],
-                    "1RM_Left": [45.2, 53.5, 66.2],
-                    "MVIC_Bil": [94.5, 109.4, 129.0],
-                    "MVIC_Right": [42.2, 51.0, 66.0],
-                    "MVIC_Left": [46.5, 52.8, 61.0],
-                    "Asymmetry_1RM": [0.0, 9.8, 21.2],
-                    "Asymmetry_MVIC": [8.8, 16.8, 26.2]
+                    "1RM_Bil":        [85.0, 90.0, 115.5],
+                    "1RM_Right":      [42.2, 52.5,  66.2],
+                    "1RM_Left":       [45.2, 53.5,  66.2],
+                    "MVIC_Bil":       [94.5,109.4, 129.0],
+                    "MVIC_Right":     [42.2, 51.0,  66.0],
+                    "MVIC_Left":      [46.5, 52.8,  61.0],
+                    "Asymmetry_1RM":  [ 0.0,  9.8,  21.2],
+                    "Asymmetry_MVIC": [ 8.8, 16.8,  26.2]
                 },
                 "Moderate": {
-                    "1RM_Bil": [66.5, 82.0, 112.5],
-                    "1RM_Right": [37.2, 47.0, 58.0],
-                    "1RM_Left": [30.2, 52.5, 65.7],
-                    "MVIC_Bil": [74.0, 102.5, 128.8],
-                    "MVIC_Right": [39.0, 46.2, 53.7],
-                    "MVIC_Left": [33.3, 50.0, 62.4],
-                    "Asymmetry_1RM": [0.0, 4.6, 26.5],
-                    "Asymmetry_MVIC": [5.4, 15.5, 28.1]
+                    "1RM_Bil":        [66.5, 82.0, 112.5],
+                    "1RM_Right":      [37.2, 47.0,  58.0],
+                    "1RM_Left":       [30.2, 52.5,  65.7],
+                    "MVIC_Bil":       [74.0,102.5, 128.8],
+                    "MVIC_Right":     [39.0, 46.2,  53.7],
+                    "MVIC_Left":      [33.3, 50.0,  62.4],
+                    "Asymmetry_1RM":  [ 0.0,  4.6,  26.5],
+                    "Asymmetry_MVIC": [ 5.4, 15.5,  28.1]
                 },
                 "Severe": {
-                    "1RM_Bil": [51.7, 75.5, 92.5],
-                    "1RM_Right": [22.7, 38.0, 52.2],
-                    "1RM_Left": [21.0, 31.0, 50.0],
-                    "MVIC_Bil": [55.5, 80.1, 95.5],
-                    "MVIC_Right": [23.5, 36.0, 44.0],
-                    "MVIC_Left": [27.9, 38.7, 42.9],
-                    "Asymmetry_1RM": [0.0, 1.5, 3.6],
-                    "Asymmetry_MVIC": [7.8, 25.1, 44.4]
+                    "1RM_Bil":        [51.7, 75.5,  92.5],
+                    "1RM_Right":      [22.7, 38.0,  52.2],
+                    "1RM_Left":       [21.0, 31.0,  50.0],
+                    "MVIC_Bil":       [55.5, 80.1,  95.5],
+                    "MVIC_Right":     [23.5, 36.0,  44.0],
+                    "MVIC_Left":      [27.9, 38.7,  42.9],
+                    "Asymmetry_1RM":  [ 0.0,  1.5,   3.6],
+                    "Asymmetry_MVIC": [ 7.8, 25.1,  44.4]
                 }
             },
             "Female": {
                 "Mild": {
-                    "1RM_Bil": [55.5, 64.0, 80.0],
-                    "1RM_Right": [25.0, 28.0, 38.0],
-                    "1RM_Left": [25.0, 32.0, 37.7],
-                    "MVIC_Bil": [65.0, 72.0, 86.7],
-                    "MVIC_Right": [30.4, 34.5, 42.6],
-                    "MVIC_Left": [28.1, 33.0, 42.3],
-                    "Asymmetry_1RM": [0.0, 4.8, 10.7],
-                    "Asymmetry_MVIC": [4.4, 7.3, 18.8]
+                    "1RM_Bil":        [55.5, 64.0,  80.0],
+                    "1RM_Right":      [25.0, 28.0,  38.0],
+                    "1RM_Left":       [25.0, 32.0,  37.7],
+                    "MVIC_Bil":       [65.0, 72.0,  86.7],
+                    "MVIC_Right":     [30.4, 34.5,  42.6],
+                    "MVIC_Left":      [28.1, 33.0,  42.3],
+                    "Asymmetry_1RM":  [ 0.0,  4.8,  10.7],
+                    "Asymmetry_MVIC": [ 4.4,  7.3,  18.8]
                 },
                 "Moderate": {
-                    "1RM_Bil": [43.0, 50.0, 67.0],
-                    "1RM_Right": [19.0, 21.5, 35.0],
-                    "1RM_Left": [18.7, 23.5, 33.5],
-                    "MVIC_Bil": [45.9, 56.4, 66.3],
-                    "MVIC_Right": [23.0, 28.4, 32.0],
-                    "MVIC_Left": [20.6, 26.7, 32.9],
-                    "Asymmetry_1RM": [0.0, 5.2, 9.1],
-                    "Asymmetry_MVIC": [7.8, 17.0, 30.6]
+                    "1RM_Bil":        [43.0, 50.0,  67.0],
+                    "1RM_Right":      [19.0, 21.5,  35.0],
+                    "1RM_Left":       [18.7, 23.5,  33.5],
+                    "MVIC_Bil":       [45.9, 56.4,  66.3],
+                    "MVIC_Right":     [23.0, 28.4,  32.0],
+                    "MVIC_Left":      [20.6, 26.7,  32.9],
+                    "Asymmetry_1RM":  [ 0.0,  5.2,   9.1],
+                    "Asymmetry_MVIC": [ 7.8, 17.0,  30.6]
                 },
                 "Severe": {
-                    "1RM_Bil": [28.0, 47.0, 61.0],
-                    "1RM_Right": [16.0, 25.0, 26.7],
-                    "1RM_Left": [18.7, 25.0, 32.5],
-                    "MVIC_Bil": [32.7, 50.3, 61.1],
-                    "MVIC_Right": [14.6, 21.5, 29.3],
-                    "MVIC_Left": [24.3, 25.8, 29.3],
-                    "Asymmetry_1RM": [0.0, 23.2, 31.9],
-                    "Asymmetry_MVIC": [14.8, 25.0, 32.3]
+                    "1RM_Bil":        [28.0, 47.0,  61.0],
+                    "1RM_Right":      [16.0, 25.0,  26.7],
+                    "1RM_Left":       [18.7, 25.0,  32.5],
+                    "MVIC_Bil":       [32.7, 50.3,  61.1],
+                    "MVIC_Right":     [14.6, 21.5,  29.3],
+                    "MVIC_Left":      [24.3, 25.8,  29.3],
+                    "Asymmetry_1RM":  [ 0.0, 23.2,  31.9],
+                    "Asymmetry_MVIC": [14.8, 25.0,  32.3]
                 }
             }
         };
 
+        // Etiquetas para los resultados
+        const VAR_LABELS = {
+            "1RM_Bil":        "1RM Bilateral",
+            "1RM_Right":      "1RM Miembro Dominante",
+            "1RM_Left":       "1RM Miembro No-Dominante",
+            "MVIC_Bil":       "MVIC Bilateral",
+            "MVIC_Right":     "MVIC Miembro Dominante",
+            "MVIC_Left":      "MVIC Miembro No-Dominante",
+            "Asymmetry_1RM":  "Asimetría 1RM (%)",
+            "Asymmetry_MVIC": "Asimetría MVIC (%)"
+        };
+
         function getQuartile(value, q1, q2, q3) {
             if (value <= q1) return { quartile: "Q1", range: `≤ ${q1}`, class: "q1" };
-            if (value <= q2) return { quartile: "Q2", range: `${q1} - ${q2}`, class: "q2" };
-            if (value <= q3) return { quartile: "Q3", range: `${q2} - ${q3}`, class: "q3" };
+            if (value <= q2) return { quartile: "Q2", range: `${q1} – ${q2}`, class: "q2" };
+            if (value <= q3) return { quartile: "Q3", range: `${q2} – ${q3}`, class: "q3" };
             return { quartile: "Q4", range: `> ${q3}`, class: "q4" };
         }
 
+        function buildResultsHTML(values, refData) {
+            return Object.keys(values)
+                .filter(key => values[key] !== null)
+                .map(variable => {
+                    const [q1, q2, q3] = refData[variable];
+                    const result = getQuartile(values[variable], q1, q2, q3);
+                    const unit = variable.startsWith("Asymmetry") ? "%" : "kgf";
+                    return `
+                        <div class="result-item">
+                            <div class="result-variable">${VAR_LABELS[variable]}:</div>
+                            <div class="result-value">${values[variable].toFixed(1)} <small style="font-size:12px;font-weight:400;color:#999">${unit}</small></div>
+                            <div><span class="quartile-badge ${result.class}">${result.quartile}</span></div>
+                            <div class="result-range">Rango ref.: ${result.range}</div>
+                        </div>`;
+                }).join('');
+        }
+
         function calculateQuartiles() {
-            const errorDiv = document.getElementById("errorMessage");
+            const errorDiv   = document.getElementById("errorMessage");
             const successDiv = document.getElementById("successMessage");
-            errorDiv.style.display = "none";
+            errorDiv.style.display   = "none";
             successDiv.style.display = "none";
 
             const gender = document.getElementById("gender").value;
             const msType = document.getElementById("msType").value;
-            const edss = document.getElementById("edss").value;
+            const edss   = document.getElementById("edss").value;
 
             if (!gender || !msType || !edss) {
                 errorDiv.textContent = "⚠️ Por favor, selecciona Sexo, Tipo de EM y Grado de Discapacidad.";
@@ -620,103 +670,53 @@
                 return;
             }
 
+            // Leer valores (null si vacío)
+            function readVal(id) {
+                const v = parseFloat(document.getElementById(id).value);
+                return isNaN(v) ? null : v;
+            }
+
             const values = {
-                "1RM_Bil": parseFloat(document.getElementById("var1rm_bil").value) || 0,
-                "1RM_Right": parseFloat(document.getElementById("var1rm_right").value) || 0,
-                "1RM_Left": parseFloat(document.getElementById("var1rm_left").value) || 0,
-                "MVIC_Bil": parseFloat(document.getElementById("varmvic_bil").value) || 0,
-                "MVIC_Right": parseFloat(document.getElementById("varmvic_right").value) || 0,
-                "MVIC_Left": parseFloat(document.getElementById("varmvic_left").value) || 0,
-                "Asymmetry_1RM": parseFloat(document.getElementById("var_asym_1rm").value) || 0,
-                "Asymmetry_MVIC": parseFloat(document.getElementById("var_asym_mvic").value) || 0
+                "1RM_Bil":        readVal("var1rm_bil"),
+                "1RM_Right":      readVal("var1rm_right"),
+                "1RM_Left":       readVal("var1rm_left"),
+                "MVIC_Bil":       readVal("varmvic_bil"),
+                "MVIC_Right":     readVal("varmvic_right"),
+                "MVIC_Left":      readVal("varmvic_left"),
+                "Asymmetry_1RM":  readVal("var_asym_1rm"),
+                "Asymmetry_MVIC": readVal("var_asym_mvic")
             };
 
-            const hasValues = Object.values(values).some(v => v !== 0);
+            const hasValues = Object.values(values).some(v => v !== null);
             if (!hasValues) {
                 errorDiv.textContent = "⚠️ Por favor, introduce al menos un valor de fuerza muscular.";
                 errorDiv.style.display = "block";
                 return;
             }
 
-            // Calculate by MS Type
-            const dataMS = quartileDataMS[gender][msType];
-            let resultsByType = "<div>";
-            Object.keys(values).forEach(variable => {
-                const [q1, q2, q3] = dataMS[variable];
-                const result = getQuartile(values[variable], q1, q2, q3);
-                const varLabel = variable.replace(/_/g, " ");
-                resultsByType += `
-                    <div class="result-item">
-                        <div class="result-variable">${varLabel}:</div>
-                        <div class="result-value">${values[variable].toFixed(1)}</div>
-                        <div class="quartile-badge ${result.class}">${result.quartile}</div>
-                        <div class="result-range">${result.range}</div>
-                    </div>
-                `;
-            });
-            resultsByType += "</div>";
-
-            // Calculate by EDSS
+            const dataMS   = quartileDataMS[gender][msType];
             const dataEDSS = quartileDataEDSS[gender][edss];
-            let resultsByEDSS = "<div>";
-            Object.keys(values).forEach(variable => {
-                const [q1, q2, q3] = dataEDSS[variable];
-                const result = getQuartile(values[variable], q1, q2, q3);
-                const varLabel = variable.replace(/_/g, " ");
-                resultsByEDSS += `
-                    <div class="result-item">
-                        <div class="result-variable">${varLabel}:</div>
-                        <div class="result-value">${values[variable].toFixed(1)}</div>
-                        <div class="quartile-badge ${result.class}">${result.quartile}</div>
-                        <div class="result-range">${result.range}</div>
-                    </div>
-                `;
-            });
-            resultsByEDSS += "</div>";
 
-            document.getElementById("resultsByType").innerHTML = resultsByType;
-            document.getElementById("resultsByEDSS").innerHTML = resultsByEDSS;
+            document.getElementById("resultsByType").innerHTML  = buildResultsHTML(values, dataMS);
+            document.getElementById("resultsByEDSS").innerHTML  = buildResultsHTML(values, dataEDSS);
             document.getElementById("resultsSection").style.display = "block";
 
             successDiv.style.display = "block";
-            setTimeout(() => {
-                successDiv.style.display = "none";
-            }, 3000);
+            setTimeout(() => { successDiv.style.display = "none"; }, 3000);
 
-            // Save data to localStorage for export
-            window.lastResults = {
-                gender,
-                msType,
-                edss,
-                values,
-                dataMS,
-                dataEDSS,
-                timestamp: new Date().toLocaleString("es-ES")
-            };
+            window.lastResults = { gender, msType, edss, values, dataMS, dataEDSS, timestamp: new Date().toLocaleString("es-ES") };
         }
 
         function resetForm() {
-            document.getElementById("gender").value = "";
-            document.getElementById("msType").value = "";
-            document.getElementById("edss").value = "";
-            document.getElementById("var1rm_bil").value = "";
-            document.getElementById("var1rm_right").value = "";
-            document.getElementById("var1rm_left").value = "";
-            document.getElementById("varmvic_bil").value = "";
-            document.getElementById("varmvic_right").value = "";
-            document.getElementById("varmvic_left").value = "";
-            document.getElementById("var_asym_1rm").value = "";
-            document.getElementById("var_asym_mvic").value = "";
+            ["gender","msType","edss"].forEach(id => document.getElementById(id).value = "");
+            ["var1rm_bil","var1rm_right","var1rm_left","varmvic_bil","varmvic_right","varmvic_left","var_asym_1rm","var_asym_mvic"]
+                .forEach(id => document.getElementById(id).value = "");
             document.getElementById("resultsSection").style.display = "none";
-            document.getElementById("errorMessage").style.display = "none";
+            document.getElementById("errorMessage").style.display   = "none";
         }
 
         function exportResults() {
-            if (!window.lastResults) {
-                alert("Por favor, calcula los cuartiles primero.");
-                return;
-            }
-
+            if (!window.lastResults) { alert("Por favor, calcula los cuartiles primero."); return; }
             const data = window.lastResults;
             let csv = "CALCULADORA DE CUARTILES DE FUERZA MUSCULAR - ESCLEROSIS MÚLTIPLE\n";
             csv += `Fecha/Hora: ${data.timestamp}\n\n`;
@@ -724,97 +724,55 @@
             csv += `Sexo: ${data.gender === "Male" ? "Varón" : "Mujer"}\n`;
             csv += `Tipo de EM: ${data.msType}\n`;
             csv += `Grado de Discapacidad (EDSS): ${data.edss}\n\n`;
-
             csv += "VALORES INTRODUCIDOS\n";
-            csv += "Variable,Valor (kgf o %)\n";
+            csv += "Variable,Valor\n";
             Object.entries(data.values).forEach(([key, val]) => {
-                csv += `${key.replace(/_/g, " ")},${val}\n`;
+                if (val !== null) csv += `${VAR_LABELS[key]},${val}\n`;
             });
-
             csv += "\nRESULTADOS - POR TIPO DE EM\n";
             csv += "Variable,Valor,Q1,Q2,Q3,Cuartil\n";
             Object.entries(data.values).forEach(([key, val]) => {
+                if (val === null) return;
                 const [q1, q2, q3] = data.dataMS[key];
                 const result = getQuartile(val, q1, q2, q3);
-                csv += `${key.replace(/_/g, " ")},${val},${q1},${q2},${q3},${result.quartile}\n`;
+                csv += `${VAR_LABELS[key]},${val},${q1},${q2},${q3},${result.quartile}\n`;
             });
-
             csv += "\nRESULTADOS - POR GRADO DE DISCAPACIDAD (EDSS)\n";
             csv += "Variable,Valor,Q1,Q2,Q3,Cuartil\n";
             Object.entries(data.values).forEach(([key, val]) => {
+                if (val === null) return;
                 const [q1, q2, q3] = data.dataEDSS[key];
                 const result = getQuartile(val, q1, q2, q3);
-                csv += `${key.replace(/_/g, " ")},${val},${q1},${q2},${q3},${result.quartile}\n`;
+                csv += `${VAR_LABELS[key]},${val},${q1},${q2},${q3},${result.quartile}\n`;
             });
-
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Cuartiles_EM_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.download = `Cuartiles_EM_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
-        // Allow Enter key to calculate
-        document.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                calculateQuartiles();
-            }
-        });
+        document.addEventListener("keypress", e => { if (e.key === "Enter") calculateQuartiles(); });
 
-        // Logo loading function
+        // Logo intercambiable
         function setLogoFromFile(file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById("logoImg").src = e.target.result;
-                localStorage.setItem("appLogo", e.target.result);
-            };
+            reader.onload = e => { document.getElementById("logoImg").src = e.target.result; };
             reader.readAsDataURL(file);
         }
-
-        // Load logo from localStorage if exists
-        window.addEventListener("load", function() {
-            const savedLogo = localStorage.getItem("appLogo");
-            if (savedLogo) {
-                document.getElementById("logoImg").src = savedLogo;
-            }
+        const logoEl = document.getElementById("logoImg");
+        logoEl.addEventListener("dragover",  e => { e.preventDefault(); logoEl.style.opacity = "0.7"; });
+        logoEl.addEventListener("dragleave", e => { e.preventDefault(); logoEl.style.opacity = "1"; });
+        logoEl.addEventListener("drop", e => {
+            e.preventDefault(); logoEl.style.opacity = "1";
+            if (e.dataTransfer.files.length) setLogoFromFile(e.dataTransfer.files[0]);
         });
-
-        // Allow drag and drop for logo upload
-        document.getElementById("logoImg").addEventListener("dragover", function(e) {
-            e.preventDefault();
-            this.style.opacity = "0.7";
-        });
-
-        document.getElementById("logoImg").addEventListener("dragleave", function(e) {
-            e.preventDefault();
-            this.style.opacity = "1";
-        });
-
-        document.getElementById("logoImg").addEventListener("drop", function(e) {
-            e.preventDefault();
-            this.style.opacity = "1";
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                setLogoFromFile(files[0]);
-            }
-        });
-
-        document.getElementById("logoImg").addEventListener("click", function() {
+        logoEl.addEventListener("click", () => {
             const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*";
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    setLogoFromFile(file);
-                }
-            };
+            input.type = "file"; input.accept = "image/*";
+            input.onchange = e => { if (e.target.files[0]) setLogoFromFile(e.target.files[0]); };
             input.click();
         });
-
-        // Add cursor pointer to logo
-        document.getElementById("logoImg").style.cursor = "pointer";
     </script>
 </body>
 </html>
-
